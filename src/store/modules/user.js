@@ -1,6 +1,7 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, logout, getFacility,getLotdialog } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
+import de from "element-ui/src/locale/lang/de";
 
 const getDefaultState = () => {
   return {
@@ -48,8 +49,18 @@ const actions = {
     })
   },
 
+  //get Facility
+  getFacility() {
+    return new Promise((resolve, reject) => {
+      getFacility().then(response => {
+        resolve(response.msg)
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
   // get user info
-  getInfo({ commit, state }) {
+/*  getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
         const { data } = response
@@ -67,7 +78,7 @@ const actions = {
         reject(error)
       })
     })
-  },
+  },*/
 
   // user logout
   logout({ commit, state }) {

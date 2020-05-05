@@ -46,16 +46,14 @@
           <i class="el-icon-ico-facility" />
         </span>
         <el-select v-model="loginForm.facility" class="el-select" placeholder="车间号">
-          <el-option label="组件一车间" value="ZLGF01" />
-          <el-option label="组件二车间" value="ZLGF02" />
-          <el-option label="组件三车间" value="ZLGF03" />
+          <el-option :label="n.FACILITY_NAME" :value="n.INSTANCE_ID" v-for="n in facilityList || []" :key="n.INSTANCE_ID" />
         </el-select>
       </el-form-item>
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
 
       <div class="tips">
-        <span style="margin-right:20px;">FA Software (Shanghai) Co., Ltd. All Rights Reserved.</span>
+        <span style="margin-right:20px;">FA Software (Shanghai) Co., Ltd. All Rights Reserved. </span>
       </div>
 
     </el-form>
@@ -63,7 +61,8 @@
 </template>
 
 <script>
-
+import {mapState} from 'vuex'
+import _ from 'lodash'
 export default {
   name: 'Login',
   data() {
@@ -82,7 +81,7 @@ export default {
       }
     }
     const validateFacility = (rule, value, callback) => {
-      if (value.length <= 0) {
+      if (_.isNull(value) || _.isUndefined(value) || value.length <= 0) {
         callback(new Error('请选择车间号'))
       } else {
         callback()
@@ -92,8 +91,9 @@ export default {
       loginForm: {
         username: 'admin',
         password: 'mes123',
-        facility: 'ZLGF03'
+        facility: localStorage.getItem('facility')
       },
+      facilityList:[],
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
@@ -128,6 +128,7 @@ export default {
         if (valid) {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm).then(() => {
+            localStorage.setItem('facility',this.loginForm.facility)
             this.$router.push({ path: this.redirect || '/' })
             this.loading = false
           }).catch(() => {
@@ -138,7 +139,32 @@ export default {
           return false
         }
       })
+    },
+    getFacilityList(){
+        //等待接口异步数据结果  res 就是结果
+      this.$store.dispatch('user/getFacility', {}).then(res => {
+        console.log(res)
+        this.facilityList = res;
+
+
+        console.log(this.facilityList)
+      })
+
+
+      /*let newSendData = {
+        id:this.facilityList[0].INSTANCE_RRN
+      }
+      // 取到list 第一个元素的id 然后缓存到全局变量中 ，加快响应速度
+      this.$store.dispatch('user/otherInfo', newSendData).then(res1 => {
+         mapState.globalData = res1.data.globalData
+      }).catch(err => {
+
+      })*/
+
     }
+  },
+  created() {
+    this.getFacilityList()
   }
 }
 </script>
@@ -159,7 +185,7 @@ $cursor: #fff;
   .el-input {
     display: inline-block;
     height: 47px;
-    width: 92%;
+    width: calc(100% - 35px);
 
     input {
       background: transparent;
@@ -252,8 +278,11 @@ $light_gray:#eee;
   .el-select {
     display: inline-block;
     height: 47px;
-    width: 92%;
+    width: calc(100% - 35px);
 
+  }
+  /deep/ .el-input--suffix{
+    width: 100%;
   }
 
 }
